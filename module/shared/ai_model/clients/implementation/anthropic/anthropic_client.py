@@ -1,3 +1,5 @@
+from module.shared.ai_model.adapter.query_adapter.implementation.anthropic import AnthropicQueryAdapter
+from module.shared.ai_model.adapter.response_adapter.implementation.anthropic import AnthropicResponseAdapter
 from ...interface import AIClient
 
 
@@ -17,16 +19,17 @@ class AnthropicClient(AIClient):
 
     def ask_query(self, query_config=None):
         query_config = query_config or {}
-
-        # Loop through the messages and add the role to each message
-        for message in query_config.get('messages', None):
-            if message['role'] == 'system':
-                message['role'] = 'assistant'
+        
+        converted_prompt = AnthropicQueryAdapter.process(query_config.get('messages', []))
+        model_required_prompt = [message['model_format'] for message in converted_prompt]
 
         response = self.client.messages.create(
-
             model=query_config.get('model', None) or self.client_config.get('model', None) or 'claude-sonnet-4-5',
             max_tokens=query_config.get('max_tokens', None) or self.client_config.get('max_tokens', None) or 300, 
-            messages=query_config.get('messages', None)
+            messages= model_required_prompt
         )
-        return response.content
+        
+        return {
+            'query':converted_prompt,
+            'response':AnthropicResponseAdapter.process(response)
+        }
