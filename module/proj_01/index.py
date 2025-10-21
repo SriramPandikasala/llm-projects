@@ -5,7 +5,7 @@ from module.shared.ai_model.factory.ai_client_factory import AIClientFactory
 
 
 
-def summarize_webpage(url: str, max_tokens: int = 300):
+def summarize_webpage(url: str, max_tokens: int = 300) -> str:
     # Fetch the website content
     content = fetch_website_contents(url)
     if not content:
@@ -37,7 +37,7 @@ def summarize_webpage(url: str, max_tokens: int = 300):
         ]
     })
 
-    return response
+    return response['response']['content']
 
 
 
